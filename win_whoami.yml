@@ -1,0 +1,19 @@
+---
+- hosts: all
+  gather_facts: false
+  remote_user: harpreet@example.com  #connection winrm 
+  become: false
+  become_user: System
+  become_method: runas
+  tasks:
+    - win_whoami:
+      register: user1
+
+    - debug: var=user1.account.account_name
+
+    - win_whoami:
+      become: true
+      register: user2
+
+    - debug:  var=user2.account.account_name
+

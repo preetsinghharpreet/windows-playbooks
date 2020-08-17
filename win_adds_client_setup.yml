@@ -1,0 +1,34 @@
+---
+- name: play for AD client configuration
+  hosts: win-server-2
+  gather_facts: false
+  tasks:
+    - name: set hostname for client
+      win_hostname:
+        name: ansible-client
+      register: c_name
+
+    - name: rebooting if required
+      win_reboot:
+      when: c_name.reboot_required
+
+    - name: joining windows Domain
+      win_domain_membership:
+        dns_domain_name: example.com
+        domain_admin_user: Administrator@example.com            #EXAMPLE.COM\Administrator
+        domain_admin_password: "{{ hostvars['win-server-1']['ansible_password'] }}"
+        #hostname: ansible-c1 
+        state: domain
+      register: client_setup
+
+    - name: rebooting if required
+      win_reboot:
+      when: client_setup.reboot_required
+
+#Global Scope -e
+#Play Scope
+#Host Scope
+#dynamic ( facts )
+#regular 
+#magic variables ( special vars ) : call : ansible_hostname : inventory_hostname
+

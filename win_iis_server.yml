@@ -1,0 +1,25 @@
+---
+- name: IIS Web server on Win Host-1
+  hosts: win-server-1
+  tasks:
+    - name: installing IIS Role and Feature
+      win_feature:
+        name: Web-Server
+        state: present
+      register: iis_output
+  
+    - debug: var=iis_output
+
+    - win_reboot:
+        msg: "System is going to reboot due to IIS Service installation"
+      when: iis_output.reboot_required 
+
+    - name: creating custom document root
+      win_copy:
+        content: "<h1>Welcome to windows IIS Service on {{ ansible_hostname }}/<h1>"
+        dest: C:\inetpub\wwwroot\index.html
+
+    - name: IIS Service #services
+      win_service:
+         name: W3Svc
+         state: started

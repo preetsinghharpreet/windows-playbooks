@@ -1,0 +1,55 @@
+---
+- name: Play to setup DC in Win 2019
+  hosts: win-server-1
+  gather_facts: false
+  vars:
+    adds_role:
+      - DNS
+      - AD-Domain-Services
+  tasks:
+    - name: Installing required windows roles and features
+      win_feature:
+        name: "{{ item }}"
+        state: present
+        include_sub_features: true
+        include_management_tools: true
+      loop: "{{ adds_role }}"
+      register: dc_feature
+
+    - debug: var=dc_feature
+
+    - name: rebooting the server if it requires
+      win_reboot:
+      when: item.reboot_required
+      loop: "{{ dc_feature.results }}"
+
+    - name: setup hostname for DC
+      win_hostname:
+         name: ansible-dc   #ansible-dc.example.com
+      register: domain_name
+  
+    - name: rebooting the server if reuquired
+      win_reboot:
+      when: domain_name.reboot_required
+      #when: domain_name.reboot_required  or  dc_feature.reboot_required
+  
+    - name: configure ADDS to setup DC
+      win_domain:
+         dns_domain_name:  example.com      #domain name
+         domain_netbios_name: ANSIBLE       #example.com   EXAMPLE     
+         database_path: C:\Window\NTDS
+         safe_mode_password: unxGouBTa6KsHgAi
+      register: dc_setup
+
+    - name: rebooting if required
+      win_reboot:
+      when: dc_setup.reboot_required
+
+ 
+
+
+
+
+
+
+ 

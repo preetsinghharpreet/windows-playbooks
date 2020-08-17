@@ -1,0 +1,21 @@
+---
+- name: play1
+  hosts: win-server-1
+  gather_facts: false
+  tasks:
+  #  - debug:
+  #      var: ansible_facts
+    - win_file:
+        path: C:\Ansible\backup
+        state: directory
+
+    - win_copy:
+         content: "This is the sample shared file"
+         dest: C:\Ansible\backup\readme.txt
+
+    - name: sharing a folder from win host
+      win_share:
+         name: share1
+         full: Administrator
+         path: C:\Ansible\backup
+         list: true

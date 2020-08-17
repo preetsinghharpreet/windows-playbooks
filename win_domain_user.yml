@@ -1,0 +1,35 @@
+---
+- name: creating domain users in DC
+  hosts: win-server-1
+  gather_facts: false
+  tasks:
+    - name: adding a user
+      win_domain_user:
+         firstname: Harpreet
+         name: user3
+         password: S0g+BO9IW+eQXCXVnvDk
+         password_never_expires: true
+         state: present
+         surname: singh
+
+- name: allowing domain users for RDP Access
+  hosts: win-server-2
+  become_method: runas
+  become_user: Administrator@example.com
+  vars:
+    #ansible_user: EXAMPLE\Administrator
+    #ansible_password: "{{ hostvars['win-server-1']['ansible_password'] }}"
+  gather_facts: false
+  tasks:
+    - name: setting the password in a variable
+      set_fact: 
+         ansible_become_pass: "{{ hostvars['win-server-1']['ansible_password'] }}"
+
+    - name: adding user to the local RDP Group
+      win_group_membership:
+         name: Remote Desktop Users
+         members:
+          - user3@example.com
+         state: present
+      become: true
+      
